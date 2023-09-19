@@ -18,7 +18,6 @@ export class ConsumerJwtStrategy extends PassportStrategy(
 
   async validate(payload: any) {
     const user = await this.userService.findOneById(parseInt(payload.id));
-    console.log(user);
     if (user.role !== 'consumer') {
       throw new UnauthorizedException('Access denied');
     }

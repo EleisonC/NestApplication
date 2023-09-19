@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RideRequest } from 'src/entities/rideRequest.entity';
-import { In, Repository } from 'typeorm';
+import { In, Repository, EntityManager } from 'typeorm';
 import { RideRequestDto } from './dto/riderRequestDto';
 import { DriversService } from 'src/drivers/drivers.service';
 import { UserService } from 'src/user/user.service';
@@ -13,46 +13,48 @@ export class RideRequestService {
     private readonly rideRequestRepository: Repository<RideRequest>,
     private readonly driverService: DriversService,
     private readonly userService: UserService,
+    private readonly entityManager: EntityManager,
   ) {}
 
   async create(rideRequest: RideRequestDto, userId: number) {
-    const userRequest = await this.rideRequestRepository.find({
-      where: { user: { id: userId }, status: In(['pending', 'accepted']) },
+    await this.entityManager.transaction(async (entityManager) => {
+      const userRequest = await this.rideRequestRepository.find({
+        where: { user: { id: userId }, status: In(['pending', 'accepted']) },
+      });
+
+      if (userRequest.length > 0) {
+        throw new ConflictException(
+          'Please cancel pending or accepted requests first',
+        );
+      }
+
+      const newRideRequest = new RideRequest();
+      const availableDrivers =
+        await this.driverService.findAllAvailableDrivers();
+      if (availableDrivers.length === 0) {
+        throw new ConflictException('No available drivers');
+      }
+      const driver = availableDrivers[0];
+      if (!driver.user) {
+        throw new ConflictException('No available drivers');
+      }
+      const notAvailableDriver =
+        await this.driverService.updateProfileAvailability(driver.user.id);
+
+      if (!notAvailableDriver) {
+        throw new ConflictException('Driver not available');
+      }
+
+      const user = await this.userService.findOneById(userId);
+
+      newRideRequest.user = user;
+      newRideRequest.pickup_location = rideRequest.pickup_location;
+      newRideRequest.destination = rideRequest.destination;
+      newRideRequest.status = 'pending';
+      newRideRequest.driverProfile = notAvailableDriver;
+
+      await entityManager.save(newRideRequest);
     });
-
-    if (userRequest.length > 0) {
-      throw new ConflictException(
-        'Please cancel pending or accepted requests first',
-      );
-    }
-
-    const newRideRequest = new RideRequest();
-    const availableDrivers = await this.driverService.findAllAvailableDrivers();
-    if (availableDrivers.length === 0) {
-      throw new ConflictException('No available drivers');
-    }
-    const driver = availableDrivers[0];
-    if (!driver.user) {
-      throw new ConflictException('No available drivers');
-    }
-    const notAvailableDriver =
-      await this.driverService.updateProfileAvailability(driver.user.id);
-
-    if (!notAvailableDriver) {
-      throw new ConflictException('Driver not available');
-    }
-
-    const user = await this.userService.findOneById(userId);
-
-    newRideRequest.user = user;
-    newRideRequest.pickup_location = rideRequest.pickup_location;
-    newRideRequest.destination = rideRequest.destination;
-    newRideRequest.status = 'pending';
-    newRideRequest.driverProfile = notAvailableDriver;
-
-    const savedRideRequest =
-      await this.rideRequestRepository.save(newRideRequest);
-    return savedRideRequest;
   }
 
   async findAll() {
@@ -106,41 +108,42 @@ export class RideRequestService {
   }
 
   async findOneAndAccept(id: number, driverId: number) {
-    const doubleRequest = await this.rideRequestRepository.findOne({
-      where: {
-        status: 'accepted',
-        driverProfile: { user: { id: driverId } },
-      },
-      relations: ['user', 'driverProfile'],
+    await this.entityManager.transaction(async (entityManager) => {
+      const doubleRequest = await this.rideRequestRepository.findOne({
+        where: {
+          status: 'accepted',
+          driverProfile: { user: { id: driverId } },
+        },
+        relations: ['user', 'driverProfile'],
+      });
+      if (doubleRequest) {
+        throw new ConflictException('Driver already has an active request');
+      }
+      const rideRequest = await this.rideRequestRepository.findOne({
+        where: {
+          id: id,
+          status: 'pending',
+          driverProfile: { user: { id: driverId } },
+        },
+        relations: ['user', 'driverProfile'],
+      });
+
+      if (!rideRequest) {
+        throw new ConflictException('Ride request not found');
+      }
+
+      const driverProfile = await this.driverService.findOneByUserId(driverId);
+
+      if (!driverProfile) {
+        throw new ConflictException('Driver not found');
+      }
+
+      const updatedRideRequest = new RideRequest();
+      updatedRideRequest.id = rideRequest.id;
+      updatedRideRequest.status = 'accepted';
+
+      await entityManager.save(updatedRideRequest);
     });
-    if (doubleRequest) {
-      throw new ConflictException('Driver already has an active request');
-    }
-    const rideRequest = await this.rideRequestRepository.findOne({
-      where: {
-        id: id,
-        status: 'pending',
-        driverProfile: { user: { id: driverId } },
-      },
-      relations: ['user', 'driverProfile'],
-    });
-
-    if (!rideRequest) {
-      throw new ConflictException('Ride request not found');
-    }
-
-    const driverProfile = await this.driverService.findOneByUserId(driverId);
-
-    if (!driverProfile) {
-      throw new ConflictException('Driver not found');
-    }
-
-    const acceptedRideRequest = await this.rideRequestRepository.save({
-      ...rideRequest,
-      status: 'accepted',
-    });
-
-    return acceptedRideRequest;
   }
 
   async findOneAndComplete(id: number, driverId: number) {
