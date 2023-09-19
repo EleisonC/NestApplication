@@ -41,6 +41,7 @@ export class DriversService {
     if (!driver) {
       throw new UnprocessableEntityException('Driver not found');
     }
+    driver.user.password = '';
     return driver;
   }
 
@@ -61,5 +62,12 @@ export class DriversService {
     }
     driver.isAvailable = !driver.isAvailable;
     return await this.driverRepository.save(driver);
+  }
+
+  async findAllAvailableDrivers() {
+    return await this.driverRepository.find({
+      where: { isAvailable: true },
+      relations: ['user'],
+    });
   }
 }

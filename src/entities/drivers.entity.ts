@@ -14,7 +14,7 @@ export class DriverProfile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, (user) => user.driverProfile, { eager: true })
   @JoinColumn()
   user: User;
 
