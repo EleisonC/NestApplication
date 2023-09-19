@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { DriversService } from './drivers.service';
 import { JwtGuard } from 'src/auth/gaurds/jwt-auth.guard';
-import { DriverJwtGuard } from 'src/auth/gaurds/jwt-driver-strategy';
+import { DriverJwtGuard } from 'src/auth/gaurds/jwt-driver-guard';
 
 @Controller('drivers')
 export class DriversController {

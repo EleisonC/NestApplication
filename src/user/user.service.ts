@@ -25,7 +25,7 @@ export class UserService {
     }
 
     const user = this.userRepository.create(userBody);
-    user.role = 'comsumer';
+    user.role = 'consumer';
     return await this.userRepository.save(user);
   }
 

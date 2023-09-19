@@ -10,6 +10,7 @@ import { JwtStrategy } from './strategies/jwt-strategy';
 import { RefreshJwtStrategy } from './strategies/refreshToken.strategy';
 import { RefreshToken } from 'src/entities/refreshToken.entity';
 import { DriverJwtStrategy } from './strategies/jwt-driver-strategy';
+import { ConsumerJwtStrategy } from './strategies/jwt-consumer-strategy';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DriverJwtStrategy } from './strategies/jwt-driver-strategy';
     LocalStrategy,
     JwtStrategy,
     DriverJwtStrategy,
+    ConsumerJwtStrategy,
     RefreshJwtStrategy,
   ],
 })
