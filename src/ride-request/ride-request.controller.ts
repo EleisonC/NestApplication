@@ -7,6 +7,7 @@ import {
   Get,
   Patch,
   Param,
+  Query,
 } from '@nestjs/common';
 import { RideRequestService } from './ride-request.service';
 import { JwtGuard } from 'src/auth/gaurds/jwt-auth.guard';
@@ -104,5 +105,14 @@ export class RideRequestController {
     return await this.rideRequestService.findPendingActiveUserRideReqs(
       parseInt(id),
     );
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('all')
+  async findAllRequests(
+    @Query('page') page: number = 1,
+    @Query('perPage') perpage: number = 10,
+  ) {
+    return await this.rideRequestService.findAll(page, perpage);
   }
 }

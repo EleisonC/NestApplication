@@ -57,11 +57,28 @@ export class RideRequestService {
     });
   }
 
-  async findAll() {
+  async findAll(page: number = 1, perPage: number = 10) {
+    const skip = (page - 1) * perPage;
+    const take = perPage;
+    const totalCount = await this.rideRequestRepository.count();
+    const totalPages = Math.ceil(totalCount / perPage);
+    if (page > totalPages) {
+      return {
+        page: page,
+        data: [],
+      };
+    }
+
     const rideRequests = await this.rideRequestRepository.find({
       relations: ['user', 'driverProfile'],
+      skip,
+      take,
     });
-    return rideRequests;
+
+    return {
+      page: page,
+      data: rideRequests,
+    };
   }
 
   async findDriverRideRequests(driverId: number) {
