@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from 'src/entities/refreshToken.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DriversService } from 'src/drivers/drivers.service';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
     @InjectRepository(RefreshToken)
     private readonly tokenRepo: Repository<RefreshToken>,
     private readonly userService: UserService,
+    private readonly driverService: DriversService,
     private jwtService: JwtService,
   ) {}
 
@@ -52,6 +54,7 @@ export class AuthService {
 
     const token = this.tokenRepo.create({
       token: refreshTokenBef,
+      owner: user.id,
     });
 
     const finalRes = await this.tokenRepo.save(token);
@@ -77,5 +80,13 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  async logout(userId: number) {
+    const user = await this.userService.findOneById(userId);
+    if (user.role === 'driver') {
+      await this.driverService.updateProfileAvailability(userId);
+    }
+    await this.tokenRepo.delete({ owner: userId });
   }
 }

@@ -7,4 +7,7 @@ export class RefreshToken {
 
   @Column({ nullable: false })
   token: string;
+
+  @Column({ nullable: true, default: '00' })
+  owner: number;
 }

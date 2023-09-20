@@ -11,10 +11,12 @@ import { RefreshJwtStrategy } from './strategies/refreshToken.strategy';
 import { RefreshToken } from 'src/entities/refreshToken.entity';
 import { DriverJwtStrategy } from './strategies/jwt-driver-strategy';
 import { ConsumerJwtStrategy } from './strategies/jwt-consumer-strategy';
+import { DriversService } from 'src/drivers/drivers.service';
+import { DriverProfile } from 'src/entities/drivers.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, RefreshToken]),
+    TypeOrmModule.forFeature([User, RefreshToken, DriverProfile]),
     JwtModule.register({
       secret: `${process.env.JWT_SECRET}`,
       signOptions: { expiresIn: '3600s' },
@@ -29,6 +31,7 @@ import { ConsumerJwtStrategy } from './strategies/jwt-consumer-strategy';
     DriverJwtStrategy,
     ConsumerJwtStrategy,
     RefreshJwtStrategy,
+    DriversService,
   ],
 })
 export class AuthModule {}
