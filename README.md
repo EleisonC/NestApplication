@@ -33,15 +33,16 @@ Before you begin, make sure you have the following prerequisites installed on yo
 2. Set the following environment variables in the `.env` file:
 
    ```
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_USERNAME=postgres
-   DB_PASSWORD=postgres
-   DB_DATABASE=ride_sharing_db
-   JWT_SECRET=your-secret-key
+    DATABASE_NAME=ride_sharing_db
+    HOST=localhost
+    PORT=5432
+    DATABASE_USER=postgres
+    DATABASE_PASS=postgres
+    JWT_SECRET=your-secret-key
    ```
 
    Replace `your-secret-key` with a strong secret key for JWT authentication.
+   Replace `localhost` with your psql container name.(When using docker)
 
 ## Running the Application Locally
 
