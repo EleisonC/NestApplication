@@ -4,6 +4,7 @@ import { LocalAuthGaurd } from './gaurds/local-auth.guard';
 import { RefreshJwtGuard } from './gaurds/refresh-jwt-auth.guards';
 import { CreateUserDto } from 'src/user/dto/userdto';
 import { UserService } from 'src/user/user.service';
+import { JwtGuard } from './gaurds/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -27,5 +28,11 @@ export class AuthController {
   @Post('refresh')
   async refresh(@Request() req) {
     return await this.authService.refresh(req.user);
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('logout')
+  async logout(@Request() req) {
+    return await this.authService.logout(req.user.id);
   }
 }
