@@ -16,13 +16,13 @@ Before you begin, make sure you have the following prerequisites installed on yo
 
 ## Database Setup
 
-1. Create a PostgreSQL database with the following configurations:
+1. Create a PostgreSQL database with the following configurations (Or any of your choice):
 
    - Database name: `ride_sharing_db`
    - User: `postgres`
    - Password: `postgres`
 
-   You can adjust these settings in the `.env` file if needed.
+   Add these settings in the `.env`.
 
 2. Ensure that the PostgreSQL service is running.
 
