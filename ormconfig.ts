@@ -7,11 +7,11 @@ import 'dotenv/config';
 
 const config: PostgresConnectionOptions = {
   type: 'postgres',
-  database: 'testdb',
+  database: process.env.DATABASE_NAME,
   host: process.env.HOST || 'nestapp-db-1',
-  port: parseInt(process.env.PORT) || 5432,
-  username: process.env.DATABASE_USER || 'postgres',
-  password: process.env.DATABASE_PASS || 'postgres',
+  port: parseInt(process.env.PORT),
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASS,
   entities: [User, RefreshToken, DriverProfile, RideRequest],
   synchronize: true,
 };

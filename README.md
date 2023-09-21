@@ -34,7 +34,7 @@ Before you begin, make sure you have the following prerequisites installed on yo
 
    ```
     DATABASE_NAME=ride_sharing_db
-    HOST=localhost
+    HOST=localhost # remember to change this to the name of the docker container if using docker compose
     PORT=5432
     DATABASE_USER=postgres
     DATABASE_PASS=postgres
