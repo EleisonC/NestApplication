@@ -11,6 +11,6 @@ async function bootstrap() {
       forbidNonWhitelisted: true, // This will throw an error if there are properties that are not in the DTO
     }),
   );
-  await app.listen(6000);
+  await app.listen(3000);
 }
 bootstrap();
